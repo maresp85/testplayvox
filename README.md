@@ -1,5 +1,5 @@
 
-**1.DESCRIPCIÓN**
+**1. DESCRIPCIÓN**
 
 Se desarrolló un proyecto que permite efectuar operaciones CRUD de usuarios y notas, a través de Micro-Servicios Web RestFul, utilizando el Framework Django. Se implementaron cuatro (4) contenedores en docker para los microservicios:
 
@@ -13,7 +13,7 @@ El Micro-Servicio alojado en el tercer contenedor (NoteServices), se conecta al 
 &nbsp;
 &nbsp;
 
-**2.CONFIGURACIÓN**
+**2. CONFIGURACIÓN**
 
 Los MicroServicios en Django, fueron desplegados en modo Debug (No los desplegué con Gunicorn), y utilizan los puertos 8000 y 8001, ambos se configuraron para correr en la máquina host, con la dirección _localhost._ Las bases de datos corren en contenedores diferentes, a través del puerto 27017.
 
@@ -24,7 +24,7 @@ Los puertos 8000 y 8001 no pueden estar ocupados en el equipo host.
 &nbsp;
 &nbsp;
 
-**3.VERSIONAMIENTO**
+**3. VERSIONAMIENTO**
 
 ```
 docker Server v. 19.03.1 docker Client v. 19.03.1 
