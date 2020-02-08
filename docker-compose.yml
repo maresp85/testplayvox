@@ -1,0 +1,45 @@
+version: '2'
+
+services:
+      userservices:
+        image: maresp85/testplayvox:userservices
+        container_name: userservices
+        command: "bash -c 'python manage.py migrate --no-input && python manage.py runserver 0.0.0.0:8000'"
+        ports:
+          - 8000:8000
+        depends_on:
+          - mongo
+        restart: always
+        links:
+          - mongo
+
+      mongo:
+        image: mongo
+        container_name: mongoplayvox
+        environment:
+          - MONGODB_DATABASE=users
+        volumes:
+          - ./db:/var/lib/mongo
+        restart: always
+
+      noteservices:
+        image: maresp85/testplayvox:noteservices
+        container_name: noteservices
+        command: "bash -c 'python manage.py migrate --no-input && python manage.py runserver 0.0.0.0:8001'"
+        ports:
+          - 8001:8001
+        depends_on:
+          - mongo2
+        restart: always
+        links:
+          - mongo2
+          - userservices
+
+      mongo2:
+        image: mongo
+        container_name: mongoplayvox2
+        environment:
+          - MONGODB_DATABASE=notes
+        volumes:
+          - ./db:/var/lib/mongo2
+        restart: always
