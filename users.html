@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Users</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+
+</head>
+<body>
+    <div id="appUsers" class="container">
+        <div class="jumbotron" style="padding:10px">
+            <h3 class="display-5">Technical test for PLAYVOX - Vue.js Page</h3>
+            <p class="lead">Mario Fernando Espinosa - mario.f.espinosa@gmail.com</p>
+        </div>
+        <span v-if="loading" style="color:red">Loading...</span>
+        <!-- Search Form -->
+        <section v-if="showlist" class="form">
+            <form action="" class="text-center">
+                <div class="row m-4">
+                    <div class="col">
+                        <input v-model="name" @keyup.enter="userSearch" type="text" class="form-control" placeholder="Search By First Name">
+                    </div>
+                    <div>
+                        <input @click="userSearch" type="button" value="Search" class="btn btn-success">
+                    </div>
+                </div>
+            </form>
+        </section>
+        <!-- Show Users -->
+        <section v-if="showlist" class="data">
+            <h4>Users</h4>
+            <table class="table bordered">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">First Name</th>
+                        <th scope="col">Last Name</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Age</th>
+                        <th scope="col">Gender</th>
+                        <th scope="col">Register</th>
+                        <th scope="col">Options</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(user, index) in users">
+                        <td>{{ user.id }}</td>
+                        <td>
+                            <span v-if="formUpdate && idUpdate == index">
+                                <!-- Form to update -->
+                                <input v-model="first_nameUpdate" type="text" class="form-control" maxlength="100">
+                            </span>
+                            <span v-else>
+                                {{ user.first_name }}
+                            </span>
+                        </td>
+                        <td>
+                            <span v-if="formUpdate && idUpdate == index">
+                                <!-- Form to update -->
+                                <input v-model="last_nameUpdate" type="text" class="form-control" maxlength="100">
+                            </span>
+                            <span v-else>
+                                {{ user.last_name }}
+                            </span>
+                        </td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            <span v-if="formUpdate && idUpdate == index">
+                                <!-- Form to update -->
+                                <input v-model="ageUpdate" type="number" class="form-control">
+                            </span>
+                            <span v-else>
+                                {{ user.age }}
+                            </span>
+                        </td>
+                        <td>
+                            <span v-if="formUpdate && idUpdate == index">
+                                <!-- Form to update -->
+                                <input v-model="genderUpdate" type="text" class="form-control" maxlength="1">
+                            </span>
+                            <span v-else>
+                                {{ user.gender }}
+                            </span>
+                        </td>
+                        <td>{{ user.date_register }}</td>
+                        <td>
+                            <!--Save info update -->
+                            <span v-if="formUpdate && idUpdate == index">
+                                <button @click="saveUpdate(index)" class="btn btn-success btn-sm">Save</button>
+                            </span>
+                            <span v-else>
+                                <!-- show notes from user-->
+                                <button @click="showNotes(index)" class="btn btn-primary btn-sm">Notes</button>
+                                <!-- Show form Update -->
+                                <button @click="seeFormUpdate(index)" class="btn btn-warning btn-sm">Update</button>
+                                <!-- Delete-->
+                                <button @click="deleteUser(index)" class="btn btn-danger btn-sm">Remove</button>
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <hr>
+        <section v-if="showlist" class="data">
+          <h4>New User</h4>
+          <form v-if="!errorgetuser" action="" class="text-center">
+            <div class="form-group">
+                <input v-model="first_name" type="text" class="form-control" placeholder="First Name" maxlength="100">
+            </div>
+            <div class="form-group">
+                <input v-model="last_name" type="text" class="form-control" placeholder="Last Name" maxlength="100">
+            </div>
+            <div class="form-group">
+                <input v-model="email" type="email" class="form-control" placeholder="Email" maxlength="100">
+            </div>
+            <div class="form-group">
+                <input v-model="age" type="number" class="form-control" placeholder="Age">
+            </div>
+            <div class="form-group">
+                <input v-model="gender" type="text" class="form-control" placeholder="Gender" maxlength="1">
+            </div>
+            <input @click="newUser" type="button" value="Save" class="btn btn-primary">
+          </form>
+          <br>
+          <div v-if="errorsaveuser" class="alert alert-danger" role="alert">
+            An error occurred while saving the user. Check fields
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div v-if="goodjob" class="alert alert-success" role="alert">
+            Good Job!
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div v-if="errorgetuser" class="alert alert-danger" role="alert">
+            Check Web Services. Error retrieve users
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        </section>
+        <!--section notes-->
+        <section v-if="shownotes" class="data">
+            <caption><strong>Notes from {{ namenote }}</strong></caption>
+            <button @click="showList" class="btn btn-outline-primary btn-sm ml-2">Back</button>
+            <table class="table bordered mt-1">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Title</th>
+                        <th scope="col">Body</th>
+                        <th scope="col">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(note, index) in notes">
+                        <td>{{ note.title }}</td>
+                        <td>{{ note.body }}</td>
+                        <td>{{ note.register }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <hr>
+            <h4>New Note</h4>
+            <form action="" class="text-center">
+              <div class="form-group">
+                  <input v-model="title" type="text" class="form-control" placeholder="Title" maxlength="100">
+              </div>
+              <div class="form-group">
+                  <input v-model="body" type="text" class="form-control" placeholder="Body" maxlength="240">
+              </div>
+              <input @click="newNote" type="button" value="Save" class="btn btn-success">
+            </form>
+        </section>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            new Vue({
+                el: '#appUsers',
+                data: {
+                    users: null,
+                    notes: null,
+                    //name is use to search
+                    name: '',
+                    // show form update
+                    formUpdate: false,
+                    // position list
+                    idUpdate: -1,
+                    // fields to update
+                    first_nameUpdate: '',
+                    last_nameUpdate: '',
+                    ageUpdate: '',
+                    genderUpdate: '',
+                    //create user
+                    first_name: null,
+                    last_name: null,
+                    email: null,
+                    age: null,
+                    gender: null,
+                    //create note
+                    title: null,
+                    body: null,
+                    //show sections
+                    showlist: true,
+                    shownotes: false,
+                    // show alerts
+                    errorsaveuser: false,
+                    goodjob: false,
+                    errorgetuser: false,
+                    loading: false,
+                    //other
+                    namenote: null,
+                    iduser: null,
+                },
+                methods: {
+                    userSearch: function(name){
+                      this.loading= true;
+                      axios.get('http://localhost:8000/v1/usersearch/', {
+                              params: {
+                                  query: this.name
+                              }
+                          })
+                          .then( response => {
+                              console.log(response)
+                              this.users = response.data;
+                              this.loading= false;
+                          })
+                          .catch( e=> {
+                            console.log(e)
+                            this.loading= false;
+                           })
+                    },
+                    getUsers(){
+                        this.loading= true;
+                        axios.get('http://localhost:8000/v1/users/')
+                            .then( response => {
+                                console.log(response)
+                                this.users = response.data;
+                                this.errorgetuser = false;
+                                this.loading= false;
+                            })
+                            .catch( e => {
+                              console.log(e)
+                              this.errorgetuser = true;
+                              this.loading= false;
+                            })
+                    },
+                    seeFormUpdate: function (id) {
+                        // before show form Update, fill fields
+                        this.idUpdate = id;
+                        this.first_nameUpdate = this.users[id].first_name;
+                        this.last_nameUpdate = this.users[id].last_name;
+                        this.ageUpdate = this.users[id].age;
+                        this.genderUpdate = this.users[id].gender;
+                        // show form
+                        this.formUpdate = true;
+                    },
+                    saveUpdate: function (id) {
+                        this.loading= true;
+                        // hidden form
+                        this.formUpdate = false;
+                        // Update User
+                        this.users[id].first_name = this.first_nameUpdate;
+                        this.users[id].last_name = this.last_nameUpdate;
+                        this.users[id].age = this.ageUpdate;
+                        this.users[id].gender = this.genderUpdate;
+                        axios.put(`http://localhost:8000/v1/users/${this.users[id].id}`, {
+                            "first_name": this.users[id].first_name,
+                            "last_name": this.users[id].last_name,
+                            "email": this.users[id].email,
+                            "age": this.users[id].age,
+                            "gender": this.users[id].gender,
+                        })
+                        .then( response => {
+                            console.log(response)
+                            this.users = response.data;
+                            this.goodjob = true;
+                            this.errorsaveuser = false;
+                            this.loading= false;
+                        })
+                        .catch( e => {
+                          console.log(e)
+                          this.goodjob = false;
+                          this.errorsaveuser = true;
+                          this.loading= false;
+                          this.getUsers();
+                        })
+                    },
+                    deleteUser: function (id) {
+                        this.loading= true;
+                        axios.delete(`http://localhost:8000/v1/users/${this.users[id].id}`)
+                        .then( response => {
+                            console.log(response)
+                            this.goodjob = true;
+                            this.users.splice(id, 1);
+                            this.loading= false;
+                        })
+                        .catch( e => {
+                          console.log(e)
+                          this.loading= false;
+                        })
+                    },
+                    newUser: function () {
+                        this.loading= true;
+                        axios.post('http://localhost:8000/v1/users/', {
+                            "first_name": this.first_name,
+                            "last_name": this.last_name,
+                            "email": this.email,
+                            "age": this.age,
+                            "gender": this.gender,
+                        })
+                        .then( response => {
+                            console.log(response)
+                            this.users = response.data;
+                            //clean fields
+                            this.first_name = null;
+                            this.last_name = null;
+                            this.email = null;
+                            this.age = null;
+                            this.gender = null;
+                            this.errorsaveuser = false;
+                            this.goodjob = true;
+                            this.loading= false;
+                        })
+                        .catch( e => {
+                          console.log(e)
+                          this.errorsaveuser = true;
+                          this.goodjob = false;
+                          this.loading= false;
+                        })
+                    },
+                    showNotes: function (id) {
+                        this.loading= true;
+                        this.showlist = false;
+                        this.shownotes = true;
+                        this.namenote = this.users[id].first_name;
+                        this.iduser = this.users[id].id;
+                        axios.get(`http://localhost:8001/v1/notes/${this.iduser}`)
+                        .then( response => {
+                            console.log(response)
+                            this.notes = response.data;
+                            this.loading= false;
+                        })
+                        .catch( e => {
+                          alert('Ocurrió un error: ' + e)
+                          this.loading= false;
+                        })
+                    },
+                    showList: function () {
+                        this.notes = null;
+                        this.shownotes = false;
+                        this.showlist = true;
+                    },
+                    newNote: function () {
+                        this.loading= true;
+                        axios.post('http://localhost:8001/v1/notes/', {
+                            "iduser": this.iduser,
+                            "title": this.title,
+                            "body": this.body,
+                        })
+                        .then( response => {
+                            console.log(response)
+                            d = new Date();
+                            this.notes.push({title: this.title, body: this.body, register: d});
+                            //clean fields
+                            this.title = null;
+                            this.body = null;
+                            this.loading= false;
+                        })
+                        .catch( e => {
+                          alert('Ocurrió un error: ' + e)
+                          this.loading= false;
+                        })
+                    },
+                },
+                created: function(){
+                    this.getUsers()
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
